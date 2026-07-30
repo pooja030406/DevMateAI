@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pooja.devmateai.presentation.screens.login.LoginScreen
 import com.pooja.devmateai.presentation.screens.welcome.WelcomeScreen
+import com.pooja.devmateai.presentation.screens.home.HomeScreen
 
 @Composable
 fun AppNavigation() {
@@ -31,9 +32,14 @@ fun AppNavigation() {
 
             LoginScreen(
                 onLoginClick = {
-
+                    navController.navigate("home")
                 }
             )
+
+        }
+        composable("home") {
+
+            HomeScreen()
 
         }
 
