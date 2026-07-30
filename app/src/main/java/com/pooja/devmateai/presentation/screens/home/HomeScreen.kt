@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.dp
 import com.pooja.devmateai.presentation.components.FeatureCard
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onResumeClick: () -> Unit
+) {
 
     Column(
         modifier = Modifier
@@ -44,7 +46,9 @@ fun HomeScreen() {
 
         FeatureCard(
             title = "📄 Resume Analyzer",
-            onClick = {}
+            onClick = {
+                onResumeClick()
+            }
         )
 
         FeatureCard(

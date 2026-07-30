@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.pooja.devmateai.presentation.screens.login.LoginScreen
 import com.pooja.devmateai.presentation.screens.welcome.WelcomeScreen
 import com.pooja.devmateai.presentation.screens.home.HomeScreen
+import com.pooja.devmateai.presentation.screens.resume.ResumeScreen
 
 @Composable
 fun AppNavigation() {
@@ -38,9 +39,14 @@ fun AppNavigation() {
 
         }
         composable("home") {
-
-            HomeScreen()
-
+            HomeScreen(
+                onResumeClick = {
+                    navController.navigate("resume")
+                }
+            )
+        }
+        composable("resume") {
+            ResumeScreen()
         }
 
     }
