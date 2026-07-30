@@ -3,8 +3,8 @@ package com.pooja.devmateai
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.pooja.devmateai.presentation.screens.welcome.WelcomeScreen
 import com.pooja.devmateai.ui.theme.DevMateaiTheme
+import com.pooja.devmateai.presentation.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
 
@@ -14,11 +14,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             DevMateaiTheme {
 
-                WelcomeScreen(
-                    onGetStartedClick = {
-
-                    }
-                )
+                AppNavigation()
 
             }
         }
