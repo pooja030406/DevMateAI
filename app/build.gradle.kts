@@ -1,10 +1,21 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
 
+val localProperties = Properties().apply {
+    load(rootProject.file("local.properties").inputStream())
+}
+
+val openRouterApiKey =
+    localProperties.getProperty("OPENROUTER_API_KEY") ?: ""
+
 android {
+
     namespace = "com.pooja.devmateai"
+
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -18,6 +29,12 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        buildConfigField(
+            "String",
+            "OPENROUTER_API_KEY",
+            "\"$openRouterApiKey\""
+        )
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -28,12 +45,15 @@ android {
             }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -56,4 +76,13 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+    implementation(libs.gson)
+    implementation(libs.pdfbox)
+
 }

@@ -1,48 +1,73 @@
 package com.pooja.devmateai.presentation.screens.resume
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.pooja.devmateai.presentation.viewmodel.ResumeViewModel
+import com.pooja.devmateai.utils.PdfUtils
 import com.pooja.devmateai.utils.getFileName
 
 @Composable
 fun ResumeScreen() {
+
     var selectedResume by remember {
         mutableStateOf<Uri?>(null)
     }
 
+    var resumeText by remember {
+        mutableStateOf("")
+    }
+
+    var jobDescription by remember {
+        mutableStateOf("")
+    }
+
+    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+
+    val viewModel: ResumeViewModel = viewModel()
+
+    val aiResult by viewModel.result.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val atsScore by viewModel.atsScore.collectAsState()
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
+
         selectedResume = uri
+
+        uri?.let {
+            resumeText = PdfUtils.extractText(context, it)
+        }
     }
-    val context = LocalContext.current
+    val cardColor = when {
+        atsScore >= 75 -> Color(0xFFE8F5E9)   // Green
+        atsScore >= 50 -> Color(0xFFFFF3E0)   // Orange
+        atsScore > 0 -> Color(0xFFFFEBEE)     // Red
+        else -> Color.White
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(20.dp),
 
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -52,14 +77,13 @@ fun ResumeScreen() {
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = "Upload your resume and get AI-powered feedback.",
-            style = MaterialTheme.typography.bodyLarge
+            text = "Upload your resume and compare it with a Job Description."
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         Button(
             onClick = {
@@ -69,35 +93,151 @@ fun ResumeScreen() {
         ) {
             Text("Upload Resume")
         }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         selectedResume?.let { uri ->
 
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = cardColor
+                )
+            ) {
+
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+
+                    Text(
+                        text = "📄 Selected Resume",
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(getFileName(context, uri))
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("Characters Extracted: ${resumeText.length}")
+
+                }
+
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "📄 Selected Resume",
+                text = "💼 Job Description (Optional)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = getFileName(context, uri),
-                style = MaterialTheme.typography.bodyLarge
+            OutlinedTextField(
+                value = jobDescription,
+                onValueChange = {
+                    jobDescription = it
+                },
+                label = {
+                    Text("Paste Job Description")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
+                enabled = !isLoading,
                 onClick = {
-                    // AI Integration yahan hoga
+                    viewModel.analyzeResume(
+                        resumeText = resumeText,
+                        jobDescription = jobDescription
+                    )
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Analyze with AI")
+
+                if (isLoading) {
+
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text("Analyzing...")
+
+                } else {
+
+                    Text("Analyze Resume")
+
+                }
+
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (aiResult.isNotEmpty()) {
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = cardColor
+                    )
+                ){
+
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        val cardColor = when {
+                            atsScore >= 80 -> Color(0xFFDFF5E1)   // Green
+                            atsScore >= 60 -> Color(0xFFFFF3CD)   // Yellow
+                            else -> Color(0xFFF8D7DA)             // Red
+                        }
+
+                        Text(
+                            text = "🤖 AI Feedback",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "ATS Variable = $atsScore",
+                            color = Color.Red
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = aiResult
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Button(
+                            onClick = {
+                                clipboard.setText(
+                                    AnnotatedString(aiResult)
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Copy Feedback")
+                        }
+
+                    }
+
+                }
+
+            }
+
         }
+
     }
+
 }
