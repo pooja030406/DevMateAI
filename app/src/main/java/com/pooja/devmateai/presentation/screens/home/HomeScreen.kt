@@ -16,8 +16,9 @@ import com.pooja.devmateai.presentation.components.FeatureCard
 
 @Composable
 fun HomeScreen(
-    onResumeClick: () -> Unit
-) {
+    onResumeClick: () -> Unit,
+    onInterviewClick: () -> Unit
+){
 
     Column(
         modifier = Modifier
@@ -53,7 +54,9 @@ fun HomeScreen(
 
         FeatureCard(
             title = "🎤 AI Mock Interview",
-            onClick = {}
+            onClick = {
+                onInterviewClick()
+            }
         )
 
         FeatureCard(

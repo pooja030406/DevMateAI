@@ -8,7 +8,8 @@ import com.pooja.devmateai.presentation.screens.login.LoginScreen
 import com.pooja.devmateai.presentation.screens.welcome.WelcomeScreen
 import com.pooja.devmateai.presentation.screens.home.HomeScreen
 import com.pooja.devmateai.presentation.screens.resume.ResumeScreen
-
+import com.pooja.devmateai.presentation.screens.interview.InterviewSetupScreen
+import com.pooja.devmateai.presentation.screens.interview.InterviewScreen
 @Composable
 fun AppNavigation() {
 
@@ -42,6 +43,9 @@ fun AppNavigation() {
             HomeScreen(
                 onResumeClick = {
                     navController.navigate("resume")
+                },
+                onInterviewClick = {
+                    navController.navigate("interview")
                 }
             )
         }
@@ -49,5 +53,15 @@ fun AppNavigation() {
             ResumeScreen()
         }
 
+        composable("interview") {
+            InterviewSetupScreen(
+                onStartInterview = {
+                    navController.navigate("interviewChat")
+                }
+            )
+        }
+        composable("interviewChat") {
+            InterviewScreen()
+        }
     }
 }
